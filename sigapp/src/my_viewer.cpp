@@ -14,7 +14,13 @@ double y = 65;
 double z = 0.0;
 float degrees = (float)GS_PI / 180;
 
+//These variables keep track of where the joints are
 float leftarmcntr = 0;
+float rightarmcntr = 0;
+float leftlegcntr = 0;
+float rightlegcntr = 0;
+float headcntr = 0;
+
 
 MyViewer::MyViewer ( int x, int y, int w, int h, const char* l ) : WsViewer(x,y,w,h,l)
 {
@@ -150,7 +156,7 @@ void MyViewer::moveleftarm(float x)
 	GsMat tr;
 	GsMat rot;
 	leftarmcntr += x;
-	rot.rotz(leftarmcntr);
+	rot.rotx(leftarmcntr);
 	tr.translation(GsVec(0, 0, 0));
 	
 	armMat.rotz(leftarmcntr);
@@ -168,11 +174,11 @@ void MyViewer::moverightarm(float x)
 	GsMat armMat = larm->mat();
 	GsMat tr;
 	GsMat rot;
-	leftarmcntr += x;
-	rot.rotz(leftarmcntr);
+	rightarmcntr+= x;
+	rot.rotz(rightarmcntr);
 	tr.translation(GsVec(0, 0, 0));
 
-	armMat.rotz(leftarmcntr);
+	armMat.rotx(rightarmcntr);
 	armMat.mult(tr, armMat);
 	larm->initial_mat(armMat);
 	render();
@@ -185,11 +191,11 @@ void MyViewer::moveleftleg(float x)
 	GsMat armMat = larm->mat();
 	GsMat tr;
 	GsMat rot;
-	leftarmcntr += x;
-	rot.rotz(leftarmcntr);
+	leftlegcntr += x;
+	rot.rotz(leftlegcntr);
 	tr.translation(GsVec(0, 0, 0));
 
-	armMat.rotz(leftarmcntr);
+	armMat.rotz(leftlegcntr);
 	armMat.mult(tr, armMat);
 	larm->initial_mat(armMat);
 	render();
@@ -202,11 +208,11 @@ void MyViewer::moverightleg(float x)
 	GsMat armMat = larm->mat();
 	GsMat tr;
 	GsMat rot;
-	leftarmcntr += x;
-	rot.rotz(leftarmcntr);
+	rightlegcntr += x;
+	rot.rotz(rightlegcntr);
 	tr.translation(GsVec(0, 0, 0));
 
-	armMat.rotz(leftarmcntr);
+	armMat.rotz(rightlegcntr);
 	armMat.mult(tr, armMat);
 	larm->initial_mat(armMat);
 	render();
@@ -219,11 +225,11 @@ void MyViewer::movehead(float x)
 	GsMat armMat = larm->mat();
 	GsMat tr;
 	GsMat rot;
-	leftarmcntr += x;
-	rot.rotz(leftarmcntr);
+	headcntr += x;
+	rot.rotz(headcntr);
 	tr.translation(GsVec(0, 0, 0));
 
-	armMat.rotz(leftarmcntr);
+	armMat.rotz(headcntr);
 	armMat.mult(tr, armMat);
 	larm->initial_mat(armMat);
 	render();
@@ -271,31 +277,56 @@ int MyViewer::handle_keyboard ( const GsEvent &e )
 	{	case GsEvent::KeyEsc : gs_exit(); return 1;
 		default: gsout<<"Key pressed: "<<e.key<<gsnl;
 	
-	case 'e': 
+	case 'q':
 	{
-		moveleftarm(0.001f);
+		moverightarm(-0.001f);
+		return 1;
+	}
+	case 'a': 
+	{
+		moverightarm(0.001f);
 		return 1;
 	}
 
-	case 'q':
+	
+	case 'w':
 	{
 		moveleftarm(-0.001f);
 		return 1;
 	}
 
-	case 'd':
+	case 's':
 	{
-		moveleftleg(0.001f);
+		moveleftarm(0.001f);
 		return 1;
 	}
 
-	case 'a':
+	case 'e':
+	{
+		moverightleg(-0.001f);
+		return 1;
+	}
+	case 'd':
 	{
 		moverightleg(0.001f);
 		return 1;
 	}
-
-	case 'w':
+	case 'r':
+	{
+		moveleftleg(-0.001f);
+		return 1;
+	}
+	case 'f':
+	{
+		moveleftleg(0.001f);
+		return 1;
+	}
+	case 'z':
+	{
+		movehead(-0.001f);
+		return 1;
+	}
+	case 'x':
 	{
 		movehead(0.001f);
 		return 1;
@@ -318,7 +349,7 @@ int MyViewer::handle_keyboard ( const GsEvent &e )
 			render();
 			ws_check();
 			message().setf("local time=%f", lt);
-		} while (lt < 3.0f);
+		} while (lt < 2.0f);
 	}
 	}
 

@@ -1,0 +1,7 @@
+
+sig/
+*.db
+*.opendb
+*.ipch
+*.log
+*.lastbuildstate
