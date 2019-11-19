@@ -91,7 +91,7 @@ void MyViewer::build_scene ()
 	//Same step as left leg
 	//I am mirroring the obj in x axis
 	//Using Identity matrix mirr and multiplying it to input matrix lrmatz, then transforming it
-	//The model appears black because I believe its turning it inside out
+	//The model appears black because I believe its turning it inside out, do not know how to fix it yet
 	SnModel* legr = new SnModel;
 	legr->model()->load_obj("../objs/leg.obj");
 	GsModel* lr = legr->model();
@@ -159,7 +159,7 @@ void MyViewer::moveleftarm(float x)
 	rot.rotx(leftarmcntr);
 	tr.translation(GsVec(0, 0, 0));
 	
-	armMat.rotz(leftarmcntr);
+	armMat.rotz(leftarmcntr* degrees);
 	armMat.mult(tr, armMat);
 	larm->initial_mat(armMat);
 	render();
@@ -178,7 +178,7 @@ void MyViewer::moverightarm(float x)
 	rot.rotz(rightarmcntr);
 	tr.translation(GsVec(0, 0, 0));
 
-	armMat.rotx(rightarmcntr);
+	armMat.rotx(rightarmcntr*degrees);
 	armMat.mult(tr, armMat);
 	larm->initial_mat(armMat);
 	render();
@@ -195,7 +195,7 @@ void MyViewer::moveleftleg(float x)
 	rot.rotz(leftlegcntr);
 	tr.translation(GsVec(0, 0, 0));
 
-	armMat.rotz(leftlegcntr);
+	armMat.rotx(leftlegcntr);
 	armMat.mult(tr, armMat);
 	larm->initial_mat(armMat);
 	render();
@@ -209,7 +209,7 @@ void MyViewer::moverightleg(float x)
 	GsMat tr;
 	GsMat rot;
 	rightlegcntr += x;
-	rot.rotz(rightlegcntr);
+	rot.rotx(rightlegcntr);
 	tr.translation(GsVec(0, 0, 0));
 
 	armMat.rotz(rightlegcntr);
@@ -303,22 +303,22 @@ int MyViewer::handle_keyboard ( const GsEvent &e )
 
 	case 'e':
 	{
-		moverightleg(-0.001f);
+		moverightleg(-0.01f);
 		return 1;
 	}
 	case 'd':
 	{
-		moverightleg(0.001f);
+		moverightleg(0.01f);
 		return 1;
 	}
 	case 'r':
 	{
-		moveleftleg(-0.001f);
+		moveleftleg(-0.01f);
 		return 1;
 	}
 	case 'f':
 	{
-		moveleftleg(0.001f);
+		moveleftleg(0.01f);
 		return 1;
 	}
 	case 'z':
@@ -349,7 +349,7 @@ int MyViewer::handle_keyboard ( const GsEvent &e )
 			render();
 			ws_check();
 			message().setf("local time=%f", lt);
-		} while (lt < 2.0f);
+		} while (lt < 1.5f);
 	}
 	}
 
