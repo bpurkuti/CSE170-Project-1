@@ -2,3 +2,4 @@
 *.opendb
 *.db
 sig/
+sigapp/vs2019/.vs/sigapp/v16/Browse.VC.db

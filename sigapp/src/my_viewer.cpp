@@ -1,4 +1,3 @@
-
 # include "my_viewer.h"
 
 # include <sigogl/ui_button.h>
@@ -9,39 +8,45 @@
 
 # include <sigogl/ws_run.h>
 
-double x= 0.0;
+double x = 0.0;
 double y = 65;
 double z = 0.0;
 float degrees = (float)GS_PI / 180;
 
+//These variables keep track of where the joints are
 float leftarmcntr = 0;
+float rightarmcntr = 0;
+float leftlegcntr = 0;
+float rightlegcntr = 0;
+float headcntr = 0;
 
-MyViewer::MyViewer ( int x, int y, int w, int h, const char* l ) : WsViewer(x,y,w,h,l)
+
+MyViewer::MyViewer(int x, int y, int w, int h, const char* l) : WsViewer(x, y, w, h, l)
 {
-	_nbut=0;
-	_animating=false;
-	build_ui ();
-	build_scene ();
+	_nbut = 0;
+	_animating = false;
+	build_ui();
+	build_scene();
 
 }
 
-void MyViewer::build_ui ()
+void MyViewer::build_ui()
 {
-	UiPanel *p;
+	UiPanel* p;
 	UiManager* uim = WsWindow::uim();
-	p = uim->add_panel ( "", UiPanel::HorizLeft );
-	p->add ( new UiButton ( "Animate", EvAnimate ) );
-	p->add ( new UiButton ( "Exit", EvExit ) ); p->top()->separate();
+	p = uim->add_panel("", UiPanel::HorizLeft);
+	p->add(new UiButton("Animate", EvAnimate));
+	p->add(new UiButton("Exit", EvExit)); p->top()->separate();
 }
 
-void MyViewer::add_model ( SnShape* s, GsVec p )
+void MyViewer::add_model(SnShape* s, GsVec p)
 {
 	SnManipulator* manip = new SnManipulator;
 	GsMat m;
 
 
-	m.translation ( p );
-	manip->initial_mat ( m );
+	m.translation(p);
+	manip->initial_mat(m);
 
 	SnGroup* g = new SnGroup;
 	SnLines* l = new SnLines;
@@ -53,7 +58,7 @@ void MyViewer::add_model ( SnShape* s, GsVec p )
 	rootg()->add(manip);
 }
 
-void MyViewer::build_scene ()
+void MyViewer::build_scene()
 {
 	rootg()->remove_all();
 	//SnPrimitive* p;
@@ -85,7 +90,7 @@ void MyViewer::build_scene ()
 	//Same step as left leg
 	//I am mirroring the obj in x axis
 	//Using Identity matrix mirr and multiplying it to input matrix lrmatz, then transforming it
-	//The model appears black because I believe its turning it inside out
+	//The model appears black because I believe its turning it inside out, do not know how to fix it yet
 	SnModel* legr = new SnModel;
 	legr->model()->load_obj("../objs/leg.obj");
 	GsModel* lr = legr->model();
@@ -97,7 +102,7 @@ void MyViewer::build_scene ()
 	lr->translate(GsVec(13, -50, 0));
 	lr->scale(13);
 	add_model(legr, GsVec(x, y, z));
-	
+
 
 	//Torso
 	SnModel* torso = new SnModel;
@@ -117,7 +122,7 @@ void MyViewer::build_scene ()
 	h->translate(GsVec(-15, 915, -210));
 	h->scale(2);
 	add_model(head, GsVec(x, y, z));
-	
+
 	//Right Arm
 	SnModel* rarm = new SnModel;
 	rarm->model()->load_obj("../objs/arm.obj");
@@ -143,17 +148,17 @@ void MyViewer::build_scene ()
 	add_model(larm, GsVec(x, y, z));
 }
 
-void MyViewer::moveleftarm(float x) 
+void MyViewer::moveleftarm(float x)
 {
 	SnManipulator* larm = rootg()->get<SnManipulator>(5);
 	GsMat armMat = larm->mat();
 	GsMat tr;
 	GsMat rot;
 	leftarmcntr += x;
-	rot.rotz(leftarmcntr);
+	rot.rotx(leftarmcntr);
 	tr.translation(GsVec(0, 0, 0));
-	
-	armMat.rotz(leftarmcntr);
+
+	armMat.rotz(leftarmcntr * degrees);
 	armMat.mult(tr, armMat);
 	larm->initial_mat(armMat);
 	render();
@@ -168,28 +173,28 @@ void MyViewer::moverightarm(float x)
 	GsMat armMat = larm->mat();
 	GsMat tr;
 	GsMat rot;
-	leftarmcntr += x;
-	rot.rotz(leftarmcntr);
+	rightarmcntr += x;
+	rot.rotz(rightarmcntr);
 	tr.translation(GsVec(0, 0, 0));
 
-	armMat.rotz(leftarmcntr);
+	armMat.rotx(rightarmcntr * degrees);
 	armMat.mult(tr, armMat);
 	larm->initial_mat(armMat);
 	render();
 	ws_check();
 }
 
-void MyViewer::moveleftleg(float x) 
+void MyViewer::moveleftleg(float x)
 {
 	SnManipulator* larm = rootg()->get<SnManipulator>(1);
 	GsMat armMat = larm->mat();
 	GsMat tr;
 	GsMat rot;
-	leftarmcntr += x;
-	rot.rotz(leftarmcntr);
+	leftlegcntr += x;
+	rot.rotz(leftlegcntr);
 	tr.translation(GsVec(0, 0, 0));
 
-	armMat.rotz(leftarmcntr);
+	armMat.rotx(leftlegcntr);
 	armMat.mult(tr, armMat);
 	larm->initial_mat(armMat);
 	render();
@@ -202,11 +207,11 @@ void MyViewer::moverightleg(float x)
 	GsMat armMat = larm->mat();
 	GsMat tr;
 	GsMat rot;
-	leftarmcntr += x;
-	rot.rotz(leftarmcntr);
+	rightlegcntr += x;
+	rot.rotx(rightlegcntr);
 	tr.translation(GsVec(0, 0, 0));
 
-	armMat.rotz(leftarmcntr);
+	armMat.rotz(rightlegcntr);
 	armMat.mult(tr, armMat);
 	larm->initial_mat(armMat);
 	render();
@@ -219,83 +224,110 @@ void MyViewer::movehead(float x)
 	GsMat armMat = larm->mat();
 	GsMat tr;
 	GsMat rot;
-	leftarmcntr += x;
-	rot.rotz(leftarmcntr);
+	headcntr += x;
+	rot.rotz(headcntr);
 	tr.translation(GsVec(0, 0, 0));
 
-	armMat.rotz(leftarmcntr);
+	armMat.rotz(headcntr);
 	armMat.mult(tr, armMat);
 	larm->initial_mat(armMat);
 	render();
 	ws_check();
 }
 
-void MyViewer::moveall(float x) 
+void MyViewer::moveall(float x)
 {
 
 }
 // Below is an example of how to control the main loop of an animation:
-void MyViewer::run_animation ()
+void MyViewer::run_animation()
 {
-	if ( _animating ) return; // avoid recursive calls
+	if (_animating) return; // avoid recursive calls
 	_animating = true;
-	
-	int ind = gs_random ( 0, rootg()->size()-1 ); // pick one child
+
+	int ind = gs_random(0, rootg()->size() - 1); // pick one child
 	SnManipulator* manip = rootg()->get<SnManipulator>(ind); // access one of the manipulators
 	GsMat m = manip->mat();
 
-	double frdt = 1.0/30.0; // delta time to reach given number of frames per second
+	double frdt = 1.0 / 30.0; // delta time to reach given number of frames per second
 	double v = 4; // target velocity is 1 unit per second
-	double t=0, lt=0, t0=gs_time();
+	double t = 0, lt = 0, t0 = gs_time();
 	do // run for a while:
-	{	while ( t-lt<frdt ) { ws_check(); t=gs_time()-t0; } // wait until it is time for next frame
-		double yinc = (t-lt)*v;
-		if ( t>2 ) yinc=-yinc; // after 2 secs: go down
+	{
+		while (t - lt < frdt) { ws_check(); t = gs_time() - t0; } // wait until it is time for next frame
+		double yinc = (t - lt) * v;
+		if (t > 2) yinc = -yinc; // after 2 secs: go down
 		lt = t;
 		m.e24 += (float)yinc;
-		if ( m.e24<0 ) m.e24=0; // make sure it does not go below 0
-		manip->initial_mat ( m );
+		if (m.e24 < 0) m.e24 = 0; // make sure it does not go below 0
+		manip->initial_mat(m);
 		render(); // notify it needs redraw
 		ws_check(); // redraw now
-	}	while ( m.e24>0 );
+	} while (m.e24 > 0);
 	_animating = false;
 }
 
 
-int MyViewer::handle_keyboard ( const GsEvent &e )
+int MyViewer::handle_keyboard(const GsEvent& e)
 {
-	int ret = WsViewer::handle_keyboard ( e ); // 1st let system check events
-	if ( ret ) return ret;
+	int ret = WsViewer::handle_keyboard(e); // 1st let system check events
+	if (ret) return ret;
 
-	switch ( e.key )
-	{	case GsEvent::KeyEsc : gs_exit(); return 1;
-		default: gsout<<"Key pressed: "<<e.key<<gsnl;
-	
-	case 'e': 
+	switch (e.key)
 	{
-		moveleftarm(0.001f);
+	case GsEvent::KeyEsc: gs_exit(); return 1;
+	default: gsout << "Key pressed: " << e.key << gsnl;
+
+	case 'q':
+	{
+		moverightarm(-0.001f);
+		return 1;
+	}
+	case 'a':
+	{
+		moverightarm(0.001f);
 		return 1;
 	}
 
-	case 'q':
+
+	case 'w':
 	{
 		moveleftarm(-0.001f);
 		return 1;
 	}
 
+	case 's':
+	{
+		moveleftarm(0.001f);
+		return 1;
+	}
+
+	case 'e':
+	{
+		moverightleg(-0.01f);
+		return 1;
+	}
 	case 'd':
 	{
-		moveleftleg(0.001f);
+		moverightleg(0.01f);
 		return 1;
 	}
-
-	case 'a':
+	case 'r':
 	{
-		moverightleg(0.001f);
+		moveleftleg(-0.01f);
 		return 1;
 	}
-
-	case 'w':
+	case 'f':
+	{
+		moveleftleg(0.01f);
+		return 1;
+	}
+	case 'z':
+	{
+		movehead(-0.001f);
+		return 1;
+	}
+	case 'x':
 	{
 		movehead(0.001f);
 		return 1;
@@ -318,19 +350,19 @@ int MyViewer::handle_keyboard ( const GsEvent &e )
 			render();
 			ws_check();
 			message().setf("local time=%f", lt);
-		} while (lt < 3.0f);
+		} while (lt < 1.5f);
 	}
 	}
 
 	return 0;
 }
 
-int MyViewer::uievent ( int e )
+int MyViewer::uievent(int e)
 {
-	switch ( e )
-	{	
-		case EvAnimate: run_animation(); return 1;
-		case EvExit: gs_exit();
+	switch (e)
+	{
+	case EvAnimate: run_animation(); return 1;
+	case EvExit: gs_exit();
 	}
 	return WsViewer::uievent(e);
 }
