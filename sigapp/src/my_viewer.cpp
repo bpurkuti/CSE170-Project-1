@@ -279,7 +279,7 @@ int MyViewer::handle_keyboard ( const GsEvent &e )
 
 	case 'q':
 	{
-		moverightarm(0.001f);
+		moveleftarm(-0.001f);
 		return 1;
 	}
 
