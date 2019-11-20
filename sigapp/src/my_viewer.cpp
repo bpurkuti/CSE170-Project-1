@@ -20,6 +20,8 @@ float leftlegcntr = 0;
 float rightlegcntr = 0;
 float headcntr = 0;
 
+float pi = 3.14f;
+float af = pi / 100;
 
 MyViewer::MyViewer(int x, int y, int w, int h, const char* l) : WsViewer(x, y, w, h, l)
 {
@@ -148,87 +150,65 @@ void MyViewer::build_scene()
 	add_model(larm, GsVec(x, y, z));
 }
 
-void MyViewer::moveleftarm(float x)
+void MyViewer::moveleftarm(float xx)
 {
 	SnManipulator* larm = rootg()->get<SnManipulator>(5);
 	GsMat armMat = larm->mat();
 	GsMat tr;
-	GsMat rot;
-	leftarmcntr += x;
-	rot.rotx(leftarmcntr);
-	tr.translation(GsVec(0, 0, 0));
+	leftarmcntr += xx;
 
-	armMat.rotz(leftarmcntr * degrees);
+	tr.translation(GsVec(x, y, z));
+	armMat.rotz(leftarmcntr);
 	armMat.mult(tr, armMat);
 	larm->initial_mat(armMat);
 	render();
 	ws_check();
-
-
 }
 
-void MyViewer::moverightarm(float x)
+void MyViewer::moverightarm(float xx)
 {
 	SnManipulator* larm = rootg()->get<SnManipulator>(4);
 	GsMat armMat = larm->mat();
-	GsMat tr;
-	GsMat rot;
-	rightarmcntr += x;
-	rot.rotz(rightarmcntr);
-	tr.translation(GsVec(0, 0, 0));
-
-	armMat.rotx(rightarmcntr * degrees);
-	armMat.mult(tr, armMat);
+	rightarmcntr += xx;
+	armMat.rotz(rightarmcntr);
 	larm->initial_mat(armMat);
 	render();
 	ws_check();
 }
 
-void MyViewer::moveleftleg(float x)
+void MyViewer::moveleftleg(float xx)
 {
 	SnManipulator* larm = rootg()->get<SnManipulator>(1);
 	GsMat armMat = larm->mat();
-	GsMat tr;
-	GsMat rot;
-	leftlegcntr += x;
-	rot.rotz(leftlegcntr);
-	tr.translation(GsVec(0, 0, 0));
-
+	leftlegcntr += xx;
 	armMat.rotx(leftlegcntr);
-	armMat.mult(tr, armMat);
 	larm->initial_mat(armMat);
 	render();
 	ws_check();
 }
 
-void MyViewer::moverightleg(float x)
+void MyViewer::moverightleg(float xx)
 {
 	SnManipulator* larm = rootg()->get<SnManipulator>(0);
 	GsMat armMat = larm->mat();
-	GsMat tr;
-	GsMat rot;
-	rightlegcntr += x;
-	rot.rotx(rightlegcntr);
-	tr.translation(GsVec(0, 0, 0));
-
-	armMat.rotz(rightlegcntr);
-	armMat.mult(tr, armMat);
+	rightlegcntr += xx;
+	armMat.rotx(rightlegcntr);
 	larm->initial_mat(armMat);
 	render();
 	ws_check();
 }
 
-void MyViewer::movehead(float x)
+void MyViewer::movehead(float xx)
 {
 	SnManipulator* larm = rootg()->get<SnManipulator>(3);
 	GsMat armMat = larm->mat();
 	GsMat tr;
 	GsMat rot;
-	headcntr += x;
+	headcntr += xx;
 	rot.rotz(headcntr);
 	tr.translation(GsVec(0, 0, 0));
 
-	armMat.rotz(headcntr);
+	armMat.rotx(headcntr);
 	armMat.mult(tr, armMat);
 	larm->initial_mat(armMat);
 	render();
@@ -280,56 +260,86 @@ int MyViewer::handle_keyboard(const GsEvent& e)
 
 	case 'q':
 	{
-		moverightarm(-0.001f);
+		if (rightarmcntr >= -0.098125f)
+			moverightarm(-af);
+		message().setf("rightaramcntr=%f", rightarmcntr);
 		return 1;
 	}
 	case 'a':
 	{
-		moverightarm(0.001f);
+		if (rightarmcntr <= 0.049063f)
+			moverightarm(af);
+		message().setf("rightaramcntr=%f", rightarmcntr);
 		return 1;
 	}
 
 
 	case 'w':
 	{
-		moveleftarm(-0.001f);
+		if (leftarmcntr >= -0.098125f)
+			moveleftarm(-af);
+		message().setf("leftaramcntr=%f", leftarmcntr);
 		return 1;
 	}
 
 	case 's':
 	{
-		moveleftarm(0.001f);
+		if (leftarmcntr <= 0.049063f)
+			moveleftarm(af);
+		message().setf("leftaramcntr=%f", leftarmcntr);
 		return 1;
 	}
 
 	case 'e':
 	{
-		moverightleg(-0.01f);
+		if (rightlegcntr >= -0.1)
+		{
+			moverightleg(-af);
+		}
+			
+		message().setf("rightlegcntr=%f", rightlegcntr);
 		return 1;
 	}
 	case 'd':
 	{
-		moverightleg(0.01f);
+		if (rightlegcntr <= 0.12)
+		{
+			moverightleg(af);
+		}
+		message().setf("rightlegcntr=%f", rightlegcntr);
 		return 1;
 	}
 	case 'r':
 	{
-		moveleftleg(-0.01f);
+		if (leftlegcntr >= -0.1)
+		{
+			moveleftleg(-af);
+		}
+		message().setf("leftlegcntr=%f", leftlegcntr);
 		return 1;
 	}
 	case 'f':
 	{
-		moveleftleg(0.01f);
+		if (leftlegcntr <= 0.12)
+		{
+			moveleftleg(af);
+		}
+		
+		message().setf("Leftlegcntr=%f", leftlegcntr);
 		return 1;
 	}
 	case 'z':
 	{
-		movehead(-0.001f);
+		if (headcntr >= -0.049062f)
+			movehead(-af);
+		message().setf("headcntr=%f", headcntr);
 		return 1;
 	}
 	case 'x':
 	{
-		movehead(0.001f);
+		if(headcntr<= 0.049063f)
+			movehead(af);
+		message().setf("headcntr=%f", headcntr);
 		return 1;
 	}
 
