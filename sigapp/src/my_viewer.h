@@ -19,18 +19,17 @@ class MyViewer : public WsViewer
 	void build_ui ();
 	void add_model ( SnShape* s, GsVec p );
 	void build_scene ();
-	void run_animation ();
 	virtual int handle_keyboard ( const GsEvent &e ) override;
 	virtual int uievent ( int e ) override;
 
 
-	void moveleftarm(float x);
-	void moverightarm(float x);
-	void moveleftleg(float x);
-	void moverightleg(float x);
-	void movehead(float x);
+	void moveleftarm(float xx);
+	void moverightarm(float xx);
+	void moveleftleg(float xx);
+	void moverightleg(float xx);
+	void movehead(float xx);
 
-	void moveall(float x);
+	void moveall(float a, float b, float c);
 
 };
 

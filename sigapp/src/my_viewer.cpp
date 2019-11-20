@@ -63,15 +63,6 @@ void MyViewer::add_model(SnShape* s, GsVec p)
 void MyViewer::build_scene()
 {
 	rootg()->remove_all();
-	//SnPrimitive* p;
-
-	////Floor
-	//p = new SnPrimitive(GsPrimitive::Box,35,0.5,35);
-	//p->prim().material.diffuse=GsColor::darkred;
-	//GsModel* d = p->model();
-	//d->translate(GsVec(0, -1300, 0));
-	//d->scale(35);
-	//add_model(p, GsVec(x,y,z));
 
 	//Right Leg
 	//load the obj to the model
@@ -148,6 +139,36 @@ void MyViewer::build_scene()
 	lm->translate(GsVec(35, 60, -20));
 	lm->scale(15);
 	add_model(larm, GsVec(x, y, z));
+
+
+	//Floor
+	SnPrimitive* p;
+	p = new SnPrimitive(GsPrimitive::Box, 45, 0.5, 45);
+	p->prim().material.diffuse = GsColor::yellow;
+	GsModel* d = p->model();
+	d->translate(GsVec(0, -700, 0));
+	d->scale(35);
+	add_model(p, GsVec(x, y, z));
+
+	//objs
+	//heli
+	SnModel* heli = new SnModel;
+	heli->model()->load_obj("../objs/Heli_bell.obj");
+	GsModel* he = heli->model();
+	he->translate(GsVec(-40,-20,0));
+	he->scale(35);
+	add_model(heli, GsVec(x, y, z));
+
+	//beanbag
+	SnModel* bean = new SnModel;
+	bean->model()->load_obj("../objs/beanbag.obj");
+	GsModel* be = bean->model();
+	GsMat bb;
+	bb.rotx(-100 * degrees);
+	be->transform(bb, false);
+	be->translate(GsVec(60, -45, -40));
+	be->scale(15);
+	add_model(bean, GsVec(x, y, z));
 }
 
 void MyViewer::moveleftarm(float xx)
@@ -215,36 +236,47 @@ void MyViewer::movehead(float xx)
 	ws_check();
 }
 
-void MyViewer::moveall(float x)
+void MyViewer::moveall(float a, float b, float c)
 {
+	x += a;
+	y += b;
+	z += c;
 
-}
-// Below is an example of how to control the main loop of an animation:
-void MyViewer::run_animation()
-{
-	if (_animating) return; // avoid recursive calls
-	_animating = true;
+	SnManipulator* rleg = rootg()->get<SnManipulator>(0);
+	GsMat rlMat = rleg->mat();
 
-	int ind = gs_random(0, rootg()->size() - 1); // pick one child
-	SnManipulator* manip = rootg()->get<SnManipulator>(ind); // access one of the manipulators
-	GsMat m = manip->mat();
+	SnManipulator* lleg= rootg()->get<SnManipulator>(1);
+	GsMat llMat = lleg->mat();
 
-	double frdt = 1.0 / 30.0; // delta time to reach given number of frames per second
-	double v = 4; // target velocity is 1 unit per second
-	double t = 0, lt = 0, t0 = gs_time();
-	do // run for a while:
-	{
-		while (t - lt < frdt) { ws_check(); t = gs_time() - t0; } // wait until it is time for next frame
-		double yinc = (t - lt) * v;
-		if (t > 2) yinc = -yinc; // after 2 secs: go down
-		lt = t;
-		m.e24 += (float)yinc;
-		if (m.e24 < 0) m.e24 = 0; // make sure it does not go below 0
-		manip->initial_mat(m);
-		render(); // notify it needs redraw
-		ws_check(); // redraw now
-	} while (m.e24 > 0);
-	_animating = false;
+	SnManipulator* torso = rootg()->get<SnManipulator>(2);
+	GsMat tMat = torso->mat();
+
+	SnManipulator* head = rootg()->get<SnManipulator>(3);
+	GsMat hMat = head->mat();
+
+	SnManipulator* rarm = rootg()->get<SnManipulator>(4);
+	GsMat raMat = rarm->mat();
+
+	SnManipulator* larm = rootg()->get<SnManipulator>(5);
+	GsMat laMat =larm->mat();
+
+
+	rlMat.translation(GsVec(x, y, z));
+	llMat.translation(GsVec(x, y, z));
+	tMat.translation(GsVec(x, y, z));
+	hMat.translation(GsVec(x, y, z));
+	raMat.translation(GsVec(x, y, z));
+	laMat.translation(GsVec(x, y, z));
+
+	rleg->initial_mat(rlMat);
+	lleg->initial_mat(llMat);
+	torso->initial_mat(tMat);
+	head->initial_mat(hMat);
+	rarm->initial_mat(raMat);
+	larm->initial_mat(laMat);
+
+	render();
+	ws_check();
 }
 
 
@@ -343,6 +375,29 @@ int MyViewer::handle_keyboard(const GsEvent& e)
 		return 1;
 	}
 
+	case GsEvent::KeyLeft:
+	{
+		moveall(-3.0f, 0, 0);
+		return 1;
+	}
+	case GsEvent::KeyUp:
+	{
+		moveall(0, 0, -3.0f);
+		return 1;
+	}
+
+	case GsEvent::KeyRight:
+	{
+		moveall(3.0f, 0, 0);
+		return 1;
+	}
+
+	case GsEvent::KeyDown:
+	{
+		moveall(0, 0, 3.0f);
+		return 1;
+	}
+
 	case GsEvent::KeySpace:
 	{
 		double lt, t0 = gs_time();
@@ -371,8 +426,7 @@ int MyViewer::uievent(int e)
 {
 	switch (e)
 	{
-	case EvAnimate: run_animation(); return 1;
-	case EvExit: gs_exit();
+		case EvExit: gs_exit();
 	}
 	return WsViewer::uievent(e);
 }
