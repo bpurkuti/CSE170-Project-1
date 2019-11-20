@@ -12,6 +12,8 @@ double x = 0.0;
 double y = 0.0;
 double z = 0.0;
 float degrees = (float)GS_PI / 180;
+GsVec lightPos = GsVec(0,5,5);
+
 
 //These variables keep track of where the joints are
 float leftarmcntr = 0;
@@ -50,7 +52,6 @@ void MyViewer::add_model(SnShape* s, GsVec p)
 
 	SnManipulator* shadow = new SnManipulator;
 	GsMat shad = computeShadow();
-	GsVec lightPos = GsVec(x,y,z);
 	shad.rcombtrans(lightPos);
 	shadow->initial_mat(shad);
 
@@ -176,9 +177,7 @@ void MyViewer::build_scene()
 	be->transform(bb, false);
 	be->translate(GsVec(60, -45, -40));
 	be->scale(15);
-	add_model(bean, GsVec(x, y, z));
-
-	
+	add_model(bean, GsVec(x, y, z));	
 }
 
 GsMat MyViewer::computeShadow()

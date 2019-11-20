@@ -22,6 +22,10 @@ class MyViewer : public WsViewer
 	virtual int handle_keyboard ( const GsEvent &e ) override;
 	virtual int uievent ( int e ) override;
 
+	SnGroup* _gLight;
+	SnTransform* _tShadow1;
+	SnTransform* _tShadow2;
+
 
 	void moveleftarm(float xx);
 	void moverightarm(float xx);
