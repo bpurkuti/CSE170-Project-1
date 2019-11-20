@@ -9,7 +9,7 @@
 # include <sigogl/ws_run.h>
 
 double x = 0.0;
-double y = 65;
+double y = 0.0;
 double z = 0.0;
 float degrees = (float)GS_PI / 180;
 
@@ -45,10 +45,14 @@ void MyViewer::add_model(SnShape* s, GsVec p)
 {
 	SnManipulator* manip = new SnManipulator;
 	GsMat m;
-
-
 	m.translation(p);
 	manip->initial_mat(m);
+
+	SnManipulator* shadow = new SnManipulator;
+	GsMat shad = computeShadow();
+	GsVec lightPos = GsVec(x,y,z);
+	shad.rcombtrans(lightPos);
+	shadow->initial_mat(shad);
 
 	SnGroup* g = new SnGroup;
 	SnLines* l = new SnLines;
@@ -56,13 +60,27 @@ void MyViewer::add_model(SnShape* s, GsVec p)
 	g->add(s);
 	g->add(l);
 	manip->child(g);
+	shadow->child(g);
+	shadow->visible(false);
 	manip->visible(false); // call this to turn off mouse interaction
 	rootg()->add(manip);
+	rootg()->add(shadow);
+	
+
 }
 
 void MyViewer::build_scene()
 {
 	rootg()->remove_all();
+
+	//Floor
+	SnPrimitive* p;
+	p = new SnPrimitive(GsPrimitive::Box, 45, 0.5, 45);
+	p->prim().material.diffuse = GsColor::yellow;
+	GsModel* d = p->model();
+	d->translate(GsVec(0, -700, 0));
+	d->scale(35);
+	rootg()->add(p);
 
 	//Right Leg
 	//load the obj to the model
@@ -140,24 +158,14 @@ void MyViewer::build_scene()
 	lm->scale(15);
 	add_model(larm, GsVec(x, y, z));
 
-
-	//Floor
-	SnPrimitive* p;
-	p = new SnPrimitive(GsPrimitive::Box, 45, 0.5, 45);
-	p->prim().material.diffuse = GsColor::yellow;
-	GsModel* d = p->model();
-	d->translate(GsVec(0, -700, 0));
-	d->scale(35);
-	add_model(p, GsVec(x, y, z));
-
 	//objs
-	//heli
-	SnModel* heli = new SnModel;
-	heli->model()->load_obj("../objs/Heli_bell.obj");
-	GsModel* he = heli->model();
-	he->translate(GsVec(-40,-20,0));
-	he->scale(35);
-	add_model(heli, GsVec(x, y, z));
+	////heli
+	//SnModel* heli = new SnModel;
+	//heli->model()->load_obj("../objs/Heli_bell.obj");
+	//GsModel* he = heli->model();
+	//he->translate(GsVec(-20,-20,25));
+	//he->scale(35);
+	//add_model(heli, GsVec(x, y, z));
 
 	//beanbag
 	SnModel* bean = new SnModel;
@@ -169,11 +177,31 @@ void MyViewer::build_scene()
 	be->translate(GsVec(60, -45, -40));
 	be->scale(15);
 	add_model(bean, GsVec(x, y, z));
+
+	
 }
+
+GsMat MyViewer::computeShadow()
+{
+	GsLight l;
+	//float lx = l.position.x;
+	//float ly = l.position.y;
+	//float lz = l.position.z;
+	float lx = 1.0f;
+	float ly = 2.0f;
+	float lz = 3.0f;
+	GsMat s = GsMat(1.0f, (-lx / ly), 0.0f, 0.0f,
+					0.0f, 0.0f, 0.0f, 0.0f,
+					0.0f, (-lz/ly), 1.0f, 0.0f,
+					0.0f, 0.0f, 0.0f, 1.0f);
+
+	return s;
+}
+
 
 void MyViewer::moveleftarm(float xx)
 {
-	SnManipulator* larm = rootg()->get<SnManipulator>(5);
+	SnManipulator* larm = rootg()->get<SnManipulator>(11);
 	GsMat armMat = larm->mat();
 	GsMat tr;
 	leftarmcntr += xx;
@@ -188,7 +216,7 @@ void MyViewer::moveleftarm(float xx)
 
 void MyViewer::moverightarm(float xx)
 {
-	SnManipulator* larm = rootg()->get<SnManipulator>(4);
+	SnManipulator* larm = rootg()->get<SnManipulator>(9);
 	GsMat armMat = larm->mat();
 	rightarmcntr += xx;
 	armMat.rotz(rightarmcntr);
@@ -199,7 +227,7 @@ void MyViewer::moverightarm(float xx)
 
 void MyViewer::moveleftleg(float xx)
 {
-	SnManipulator* larm = rootg()->get<SnManipulator>(1);
+	SnManipulator* larm = rootg()->get<SnManipulator>(3);
 	GsMat armMat = larm->mat();
 	leftlegcntr += xx;
 	armMat.rotx(leftlegcntr);
@@ -210,7 +238,7 @@ void MyViewer::moveleftleg(float xx)
 
 void MyViewer::moverightleg(float xx)
 {
-	SnManipulator* larm = rootg()->get<SnManipulator>(0);
+	SnManipulator* larm = rootg()->get<SnManipulator>(1);
 	GsMat armMat = larm->mat();
 	rightlegcntr += xx;
 	armMat.rotx(rightlegcntr);
@@ -221,7 +249,7 @@ void MyViewer::moverightleg(float xx)
 
 void MyViewer::movehead(float xx)
 {
-	SnManipulator* larm = rootg()->get<SnManipulator>(3);
+	SnManipulator* larm = rootg()->get<SnManipulator>(7);
 	GsMat armMat = larm->mat();
 	GsMat tr;
 	GsMat rot;
@@ -241,23 +269,23 @@ void MyViewer::moveall(float a, float b, float c)
 	x += a;
 	y += b;
 	z += c;
-
-	SnManipulator* rleg = rootg()->get<SnManipulator>(0);
+	  
+	SnManipulator* rleg = rootg()->get<SnManipulator>(1);
 	GsMat rlMat = rleg->mat();
 
-	SnManipulator* lleg= rootg()->get<SnManipulator>(1);
+	SnManipulator* lleg= rootg()->get<SnManipulator>(3);
 	GsMat llMat = lleg->mat();
 
-	SnManipulator* torso = rootg()->get<SnManipulator>(2);
+	SnManipulator* torso = rootg()->get<SnManipulator>(5);
 	GsMat tMat = torso->mat();
 
-	SnManipulator* head = rootg()->get<SnManipulator>(3);
+	SnManipulator* head = rootg()->get<SnManipulator>(7);
 	GsMat hMat = head->mat();
 
-	SnManipulator* rarm = rootg()->get<SnManipulator>(4);
+	SnManipulator* rarm = rootg()->get<SnManipulator>(9);
 	GsMat raMat = rarm->mat();
 
-	SnManipulator* larm = rootg()->get<SnManipulator>(5);
+	SnManipulator* larm = rootg()->get<SnManipulator>(11);
 	GsMat laMat =larm->mat();
 
 
@@ -294,14 +322,12 @@ int MyViewer::handle_keyboard(const GsEvent& e)
 	{
 		if (rightarmcntr >= -0.098125f)
 			moverightarm(-af);
-		message().setf("rightaramcntr=%f", rightarmcntr);
 		return 1;
 	}
 	case 'a':
 	{
 		if (rightarmcntr <= 0.049063f)
 			moverightarm(af);
-		message().setf("rightaramcntr=%f", rightarmcntr);
 		return 1;
 	}
 
@@ -310,7 +336,6 @@ int MyViewer::handle_keyboard(const GsEvent& e)
 	{
 		if (leftarmcntr >= -0.098125f)
 			moveleftarm(-af);
-		message().setf("leftaramcntr=%f", leftarmcntr);
 		return 1;
 	}
 
@@ -325,53 +350,38 @@ int MyViewer::handle_keyboard(const GsEvent& e)
 	case 'e':
 	{
 		if (rightlegcntr >= -0.1)
-		{
 			moverightleg(-af);
-		}
-			
-		message().setf("rightlegcntr=%f", rightlegcntr);
 		return 1;
 	}
 	case 'd':
 	{
 		if (rightlegcntr <= 0.12)
-		{
 			moverightleg(af);
-		}
-		message().setf("rightlegcntr=%f", rightlegcntr);
 		return 1;
 	}
 	case 'r':
 	{
 		if (leftlegcntr >= -0.1)
-		{
 			moveleftleg(-af);
-		}
-		message().setf("leftlegcntr=%f", leftlegcntr);
 		return 1;
 	}
 	case 'f':
 	{
 		if (leftlegcntr <= 0.12)
-		{
 			moveleftleg(af);
-		}
 		
-		message().setf("Leftlegcntr=%f", leftlegcntr);
 		return 1;
 	}
 	case 'z':
 	{
 		if (headcntr >= -0.049062f)
 			movehead(-af);
-		message().setf("headcntr=%f", headcntr);
 		return 1;
 	}
 	case 'x':
 	{
 		if(headcntr<= 0.049063f)
 			movehead(af);
-		message().setf("headcntr=%f", headcntr);
 		return 1;
 	}
 

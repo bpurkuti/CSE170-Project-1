@@ -28,6 +28,7 @@ class MyViewer : public WsViewer
 	void moveleftleg(float xx);
 	void moverightleg(float xx);
 	void movehead(float xx);
+	GsMat computeShadow();
 
 	void moveall(float a, float b, float c);
 
